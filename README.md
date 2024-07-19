@@ -4,7 +4,7 @@ A Dive into Building a Decentralized Identity Management on zkSync
 
 1. [Introduction](#introduction)
 2. [Project Setup](#project-setup)
-3. [Smart Contract Overview](#smart-contract-development)
+3. [Smart Contract Overview](#smart-contract-overview)
 4. [Struct](#smart-contract-struct)
 5. [Mapping and Events](#mapping-and-events)
 6. [Identity Creation](#identity-creation)
