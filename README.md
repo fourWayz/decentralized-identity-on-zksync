@@ -48,6 +48,7 @@ This will create a new zkSync era project named `IdentityManagement`. Some examp
 `cd IdentityManagement `
 `rm -rf ./contracts/*`
 `rm -rf ./test/*`
+`rm -rf ./deploy/erc20 && rm -rf ./deploy/nft`
 
 Finally, create a file named `IdentityManagement.sol` inside your `contracts` folder.
 
@@ -370,3 +371,201 @@ import { getWallet, deployContract, LOCAL_RICH_WALLETS } from '../deploy/utils';
 import { Contract, EventLog } from 'ethers';
 import { Wallet } from 'zksync-ethers';
 ```
+
+Next, proceed to initialize the wallets and deployment for testing purpose.
+
+```typescript
+  let identityManagement: Contract;
+  let user1: Wallet;
+  let user2: Wallet;
+  let deployer : Wallet
+
+  before(async () => {
+    deployer = getWallet(LOCAL_RICH_WALLETS[0].privateKey);
+    user1 = getWallet(LOCAL_RICH_WALLETS[1].privateKey);
+    user2 = getWallet(LOCAL_RICH_WALLETS[2].privateKey);
+    identityManagement = await deployContract("IdentityManagement", [], { wallet: deployer , silent: true });
+  });
+
+```
+
+In the test setup for the `IdentityManagement` contract:
+
+1. **Initialize Wallets**:
+   - Three wallets are created:
+     - `deployer` for deploying the contract.
+     - `user1` and `user2` for interacting with the contract during tests.
+
+2. **Deploy the Contract**:
+   - The `IdentityManagement` contract is deployed using the `deployer` wallet, preparing the environment for subsequent tests.
+  
+### Test: Add identity
+
+```typescript
+    it("Should allow a user to add their own identity", async function () {
+      await (identityManagement.connect(user1) as Contract).addIdentity("Alice", "alice@example.com");
+      const identity = await (identityManagement.connect(user1) as Contract).getIdentity(user1.address);
+      expect(identity.name).to.equal("Alice");
+      expect(identity.email).to.equal("alice@example.com");
+      expect(identity.isVerified).to.equal(false);
+      expect(identity.exists).to.equal(true);
+    });
+```
+
+This test confirms that a user can add their identity:
+
+1. **User adds identity**: `user1` adds their identity with the name "Alice" and email "alice@example.com".
+2. **Verify identity**: Checks that the added identity's details are correct:
+   - Name: "Alice"
+   - Email: "alice@example.com"
+   - Not verified
+   - Exists
+   
+### Test: Update identity
+
+```typescript
+    it("Should allow a user to update their own identity", async function () {
+      await (identityManagement.connect(user1) as Contract).updateIdentity("Alice Updated", "aliceupdated@example.com");
+      const identity = await (identityManagement.connect(user1) as Contract).getIdentity(user1.address);
+      expect(identity.name).to.equal("Alice Updated");
+      expect(identity.email).to.equal("aliceupdated@example.com");
+    });
+```
+
+This test confirms that a user can update their identity:
+
+1. **User updates identity**: `user1` updates their identity to "Alice Updated" with the email "aliceupdated@example.com".
+2. **Verify updated identity**: Checks that the updated identity's details are correct:
+   - Name: "Alice Updated"
+   - Email: "aliceupdated@example.com"
+  
+### Test: Verify Identity
+
+```typescript
+   it("Should allow a user to verify their own identity", async function () {
+      await (identityManagement.connect(user1) as Contract).verifyIdentity();
+      const identity = await (identityManagement.connect(user1) as Contract).getIdentity(user1.address);
+      expect(identity.isVerified).to.equal(true);
+    });
+```
+
+This test confirms that a user can verify their identity:
+
+1. **User verifies identity**: `user1` calls the `verifyIdentity` function.
+2. **Verify status**: Checks that the `isVerified` field of `user1`'s identity is `true`.
+
+### Test: Revoke Identity
+
+```typescript
+    it("Should allow a user to revoke their own identity", async function () {
+      await (identityManagement.connect(user1) as Contract).revokeIdentity();
+      const identity = await (identityManagement.connect(user1) as Contract).getIdentity(user1.address);
+      expect(identity.isVerified).to.equal(false);
+    });
+```
+
+This test confirms that a user can revoke their identity verification:
+
+1. **User revokes identity verification**: `user1` calls the `revokeIdentity` function.
+2. **Verify status**: Checks that the `isVerified` field of `user1`'s identity is `false`.
+
+
+Below is the complete test code for this contract:
+
+```typescript
+import { expect } from 'chai';
+import { getWallet, deployContract, LOCAL_RICH_WALLETS } from '../deploy/utils';
+import { Contract, EventLog } from 'ethers';
+import { Wallet } from 'zksync-ethers';
+
+describe("IdentityManagement", function () {
+  // We define a fixture to reuse the same setup in every test.
+
+  let identityManagement: Contract;
+  let user1: Wallet;
+  let user2: Wallet;
+  let deployer : Wallet
+
+  before(async () => {
+    deployer = getWallet(LOCAL_RICH_WALLETS[0].privateKey);
+    user1 = getWallet(LOCAL_RICH_WALLETS[1].privateKey);
+    user2 = getWallet(LOCAL_RICH_WALLETS[2].privateKey);
+    identityManagement = await deployContract("IdentityManagement", [], { wallet: deployer , silent: true });
+  });
+
+  describe("identityManagement", function () {
+    it("Should allow a user to add their own identity", async function () {
+      await (identityManagement.connect(user1) as Contract).addIdentity("Alice", "alice@example.com");
+      const identity = await (identityManagement.connect(user1) as Contract).getIdentity(user1.address);
+      expect(identity.name).to.equal("Alice");
+      expect(identity.email).to.equal("alice@example.com");
+      expect(identity.isVerified).to.equal(false);
+      expect(identity.exists).to.equal(true);
+    });
+
+    it("Should allow a user to update their own identity", async function () {
+      await (identityManagement.connect(user1) as Contract).updateIdentity("Alice Updated", "aliceupdated@example.com");
+      const identity = await (identityManagement.connect(user1) as Contract).getIdentity(user1.address);
+      expect(identity.name).to.equal("Alice Updated");
+      expect(identity.email).to.equal("aliceupdated@example.com");
+    });
+
+    it("Should allow a user to verify their own identity", async function () {
+      await (identityManagement.connect(user1) as Contract).verifyIdentity();
+      const identity = await (identityManagement.connect(user1) as Contract).getIdentity(user1.address);
+      expect(identity.isVerified).to.equal(true);
+    });
+
+    it("Should allow a user to revoke their own identity", async function () {
+      await (identityManagement.connect(user1) as Contract).revokeIdentity();
+      const identity = await (identityManagement.connect(user1) as Contract).getIdentity(user1.address);
+      expect(identity.isVerified).to.equal(false);
+    });
+
+  });
+});
+```
+
+If all tests passed, you should see a similar result like the image below:
+<img width="606" alt="4w-identity-test" src="https://github.com/user-attachments/assets/5582da35-c015-4b87-9cb3-d9ba427d826f">
+
+
+## Deployment
+
+Finally, let's deploy our smart contract to zksync sepolia testnet.
+
+First, add your private key to the `.env` file in the root directory:
+
+```
+WALLET_PRIVATE_KEY=YOUR-PRIVATE-KEY
+```
+
+Note: Replace `YOUR-PRIVATE-KEY` with your actual private key. Ensure you have already obtained some [zkSync faucets](https://docs.zksync.io/ecosystem/network-faucets#sepolia-faucets).
+
+Next, update `deploy.ts` inside `deploy` folder with the following code :
+
+```typescript
+
+import { deployContract } from "./utils";
+
+// An example of a basic deploy script
+// It will deploy a Greeter contract to selected network
+// as well as verify it on Block Explorer if possible for the network
+export default async function () {
+  const contractArtifactName = "IdentityManagement";
+  const constructorArguments = [];
+  await deployContract(contractArtifactName, constructorArguments);
+}
+
+```
+
+Finally, run `npm run deploy` to deploy your smart contract to zkSync sepolia testnet which will output a result like the one below:
+<img width="590" alt="4w-identity-deploy" src="https://github.com/user-attachments/assets/4fc28a86-5f9c-49d7-a784-3a6458c0bf0d">
+
+Congratulations!
+
+
+
+
+
+
