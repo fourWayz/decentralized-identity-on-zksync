@@ -351,4 +351,22 @@ The `logIdentityAction` function logs an identity-related action:
 2. **Internal function**, meaning it can only be called within the contract itself.
 
 
+## Compiling and Writing Tests
 
+To begin compiling our smart contract using `zkSync cli`, run the below command:
+
+`npm run compile` if you are using Yarn, run `yarn compile`.
+
+If it compiles successfully, you should a similar output like the image below:
+
+<img width="606" alt="4w-identity-compile" src="https://github.com/user-attachments/assets/d1793b51-4487-4c4c-89ed-b5ac6e70d131">
+
+Next, proceed to writing tests for the smart contract. First, create a file `identityManagement.test.ts` and set up the context for the contract testing.
+
+**Imports and Declarations:**
+```typescript
+import { expect } from 'chai';
+import { getWallet, deployContract, LOCAL_RICH_WALLETS } from '../deploy/utils';
+import { Contract, EventLog } from 'ethers';
+import { Wallet } from 'zksync-ethers';
+```
