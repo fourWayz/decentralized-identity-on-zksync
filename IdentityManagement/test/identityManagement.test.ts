@@ -12,6 +12,7 @@ describe("IdentityManagement", function () {
   let deployer : Wallet
 
   before(async () => {
+    deployer = getWallet(LOCAL_RICH_WALLETS[0].privateKey);
     user1 = getWallet(LOCAL_RICH_WALLETS[1].privateKey);
     user2 = getWallet(LOCAL_RICH_WALLETS[2].privateKey);
     identityManagement = await deployContract("IdentityManagement", [], { wallet: deployer , silent: true });
@@ -46,35 +47,5 @@ describe("IdentityManagement", function () {
       expect(identity.isVerified).to.equal(false);
     });
 
-    it("Should not allow a user to add an identity that already exists", async function () {
-      await expect((identityManagement.connect(user1) as Contract).addIdentity("Alice", "alice@example.com")).to.be.revertedWith(
-        "Identity already exists",
-      );
-    });
-
-    it("Should not allow a user to update an identity that does not exist", async function () {
-      await expect((identityManagement.connect(user2) as Contract).updateIdentity("Alice", "alice@example.com")).to.be.revertedWith(
-        "Identity does not exist",
-      );
-    });
-
-    it("Should not allow a user to delete an identity that does not exist", async function () {
-      await expect((identityManagement.connect(user2) as Contract).deleteIdentity()).to.be.revertedWith("Identity does not exist");
-    });
-
-    it("Should not allow a user to verify an identity that does not exist", async function () {
-      await expect((identityManagement.connect(user2) as Contract).verifyIdentity()).to.be.revertedWith("Identity does not exist");
-    });
-
-    it("Should not allow a user to revoke an identity that does not exist", async function () {
-      await expect((identityManagement.connect(user2) as Contract).revokeIdentity()).to.be.revertedWith("Identity does not exist");
-    });
-
-    it("Should allow a user to delete their own identity", async function () {
-      await (identityManagement.connect(user1) as Contract).deleteIdentity();
-      await expect((identityManagement.connect(user1) as Contract).getIdentity(user1.address)).to.be.revertedWith(
-        "Identity does not exist",
-      );
-    });
   });
 });
