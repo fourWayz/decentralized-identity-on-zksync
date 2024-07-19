@@ -5,21 +5,26 @@ A Dive into Building a Decentralized Identity Management on zkSync
 1. [Introduction](#introduction)
 2. [Project Setup](#project-setup)
 3. [Smart Contract Overview](#smart-contract-development)
-4. [Smart Contract Struct](#smart-contract-struct)
+4. [Struct](#smart-contract-struct)
 5. [Mapping and Events](#mapping-and-events)
 6. [Identity Creation](#identity-creation)
 7. [Update Identity](#update-identity)
 8. [Delete Identity](#delete-identity)
 9. [Verify Identity](#verify-identity)
-10. [Complete Code](#complete-code)
-11. [Writing Tests](#writing-tests)
-12. [Compiling and deploying](#compiling-and-deploying)
+10. [Revoke Identity](#revoke-identity)
+10. [Retrieve Identity](#retrieve-identity)
+10. [Retrieve Identity](#retrieve-identity)
+11. [Check Identity Verification](#check-identity-verification)
+12. [Log Identity Actions](#log-identity-actions)
+13. [Complete Code](#complete-code)
+14. [Writing Tests](#writing-tests)
+15. [Compiling and deploying](#compiling-and-deploying)
 
 ## Introduction
 
 A decentralized identity management has emerged as a pivotal component for enhancing security, privacy, and user control. However, zkSync, a Layer 2 scaling solution for Ethereum, offers a promising avenue for addressing these challenges. By leveraging zero-knowledge proofs, zkSync provides high throughput and low-cost transactions while maintaining the security and decentralization of the Ethereum network.
 
-In this article, we will delve into the intricacies of building a decentralized identity management system on zkSync and a step-by-step guide to implementing a robust identity management solution on zkSync era.
+In this article, we will delve into the intricacies of building a decentralized identity management system on zkSync and a step-by-step guide to implementing a robust identity management solution on zkSync era. This includes smart contract development, writing tests and deployment zkSync sepolia testnet.
 
 ## Project Setup
 
@@ -332,6 +337,19 @@ The `isIdentityVerified` function checks whether a specified user's identity is 
 
 1. **Checks that the user's identity exists** in the `identities` mapping.
 2. **Returns the verification status** (`true` or `false`) of the specified user's identity.
+
+## Log Identity Actions
+
+```solidity
+function logIdentityAction(string memory action) internal {
+        emit IdentityActionLogged(action);
+    }
+```
+
+The `logIdentityAction` function logs an identity-related action:
+
+1. **Emits the `IdentityActionLogged` event** with the provided action string.
+2. **Internal function**, meaning it can only be called within the contract itself.
 
 
 
