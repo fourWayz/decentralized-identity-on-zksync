@@ -16,7 +16,6 @@ A Dive into Building a Decentralized Identity Management on zkSync
 10. [Retrieve Identity](#retrieve-identity)
 11. [Check Identity Verification](#check-identity-verification)
 12. [Log Identity Actions](#log-identity-actions)
-13. [Complete Code](#complete-code)
 14. [Writing Tests](#writing-tests)
 15. [Compiling and deploying](#compiling-and-deploying)
 
@@ -54,7 +53,7 @@ Finally, create a file named `IdentityManagement.sol` inside your `contracts` fo
 
 ## Smart Contract Overview
 
-The Identity `identityManagemen` smart contract serves as the backbone of our decentralized identity management system. This contract, written in Solidity, allows users to manage their identities securely on the zkSync network. 
+The Identity `identityManagement` smart contract serves as the backbone of our decentralized identity management system. This contract, written in Solidity, allows users to manage their identities securely on the zkSync network. 
 
 Below is the the complete smart contract code for this project :
 
@@ -62,7 +61,7 @@ Below is the the complete smart contract code for this project :
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract IdentityVerification {
+contract IdentityManagement {
 
     /**
      * @dev Struct representing an identity.
