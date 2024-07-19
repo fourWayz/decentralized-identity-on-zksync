@@ -16,8 +16,8 @@ A Dive into Building a Decentralized Identity Management on zkSync
 10. [Retrieve Identity](#retrieve-identity)
 11. [Check Identity Verification](#check-identity-verification)
 12. [Log Identity Actions](#log-identity-actions)
-14. [Writing Tests](#writing-tests)
-15. [Compiling and deploying](#compiling-and-deploying)
+14. [Compiling and Writing Tests](#compiling-and-writing-tests)
+15. [Deployment](#deployment)
 
 ## Introduction
 
