@@ -23,7 +23,7 @@ A Dive into Building a Decentralized Identity Management on zkSync
 
 A decentralized identity management has emerged as a pivotal component for enhancing security, privacy, and user control. However, zkSync, a Layer 2 scaling solution for Ethereum, offers a promising avenue for addressing these challenges. By leveraging zero-knowledge proofs, zkSync provides high throughput and low-cost transactions while maintaining the security and decentralization of the Ethereum network.
 
-In this article, we will delve into the intricacies of building a decentralized identity management system on zkSync and a step-by-step guide to implementing a robust identity management solution on zkSync era. This includes smart contract development, writing tests and deployment zkSync sepolia testnet.
+In this article, we will delve into the intricacies of building a decentralized identity management system on zkSync and a step-by-step guide to implementing a robust identity management solution on zkSync era. This includes smart contract development, writing tests and deployment on zkSync sepolia testnet.
 
 ## Project Setup
 
