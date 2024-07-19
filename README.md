@@ -5,13 +5,15 @@ A Dive into Building a Decentralized Identity Management on zkSync
 1. [Introduction](#introduction)
 2. [Project Setup](#project-setup)
 3. [Smart Contract Overview](#smart-contract-development)
-4. [identity Creation](#identity-creation)
-5. [Creating Posts](#creating-posts)
-6. [Interacting with Posts](#interacting-with-posts)
-7. [Viewing Posts and Comments](#viewing-posts-and-comments)
-8. [Complete Code](#complete-code)
-9. [Writing Tests](#writing-tests)
-10. [Compiling and deploying](#compiling-and-deploying)
+4. [Smart Contract Struct](#smart-contract-struct)
+5. [Mapping and Events](#mapping-and-events)
+6. [Identity Creation](#identity-creation)
+7. [Update Identity](#update-identity)
+8. [Delete Identity](#delete-identity)
+9. [Verify Identity](#verify-identity)
+10. [Complete Code](#complete-code)
+11. [Writing Tests](#writing-tests)
+12. [Compiling and deploying](#compiling-and-deploying)
 
 ## Introduction
 
@@ -184,5 +186,152 @@ contract IdentityVerification {
     }
 }
 ```
+
+## Smart Contract Struct
+
+The `Identity` struct encapsulates user information, comprising the following fields:
+
+- **`address user`**: address uniquely identifying the user.
+- **`string name`**: User's name.
+- **`string email`**: User's email address.
+- **`bool isVerified`**: Indicates if the user's identity has been verified.
+- **`bool exists`**: Indicates if the identity record exists in the system.
+
+This struct provides a structured way to manage and store user identities, ensuring efficient and secure operations like adding, updating, verifying, and deleting identities within the contract.
+
+## Mapping and Events
+
+The mapping, `identities`, link user addresses to their respective `Identity` structs, facilitating efficient management of user identities.
+
+1. **`IdentityAdded`**: Emitted when a new identity is added.
+2. **`IdentityUpdated`**: Emitted when an existing identity is updated.
+3. **`IdentityDeleted`**: Emitted when an identity is deleted.
+4. **`IdentityVerified`**: Emitted when an identity is verified.
+5. **`IdentityRevoked`**: Emitted when an identity's verification is revoked.
+6. **`IdentityActionLogged`**: Emitted when any identity-related action is logged.
+
+## Identity Creation
+
+```solidity
+ function addIdentity(string memory _name, string memory _email) public {
+        require(!identities[msg.sender].exists, "Identity already exists");
+        identities[msg.sender] = Identity({
+            user: msg.sender,
+            name: _name,
+            email: _email,
+            isVerified: false,
+            exists: true
+        });
+        emit IdentityAdded(msg.sender, _name, _email);
+        logIdentityAction("Identity Added");
+    }
+```
+
+The `addIdentity` function allows a user to create a new identity. It performs the following actions:
+
+1. Checks that the user's identity does not already exist.
+2. Creates a new `Identity` struct for the user with the provided name and email, setting `isVerified` to `false` and `exists` to `true`.
+3. Updates the `identities` mapping with the new identity.
+4. Emits the `IdentityAdded` event.
+5. Logs the action "Identity Added" using the `logIdentityAction` function.
+
+## Update Identity
+
+```solidity
+  function updateIdentity(string memory _name, string memory _email) public {
+        require(identities[msg.sender].exists, "Identity does not exist");
+        identities[msg.sender].name = _name;
+        identities[msg.sender].email = _email;
+        emit IdentityUpdated(msg.sender, _name, _email);
+        logIdentityAction("Identity Updated");
+    }
+```
+The `updateIdentity` function allows a user to update their existing identity's name and email. It performs the following actions:
+
+1. Checks that the user's identity exists.
+2. Updates the `name` and `email` fields of the user's existing identity with the provided values.
+3. Emits the `IdentityUpdated` event.
+4. Logs the action "Identity Updated" using the `logIdentityAction` function.
+
+## Delete identity
+
+```solidity
+   function deleteIdentity() public {
+        require(identities[msg.sender].exists, "Identity does not exist");
+        delete identities[msg.sender];
+        emit IdentityDeleted(msg.sender);
+        logIdentityAction("Identity Deleted");
+    }
+```
+The `deleteIdentity` function allows a user to delete their existing identity. It performs the following functions actions:
+
+1. Checks that the user's identity exists.
+2. Deletes the user's identity from the `identities` mapping.
+3. Emits the `IdentityDeleted` event.
+4. Logs the action "Identity Deleted" using the `logIdentityAction` function.
+
+## Verify Identity
+
+```solidity
+  function verifyIdentity() public {
+        require(identities[msg.sender].exists, "Identity does not exist");
+        identities[msg.sender].isVerified = true;
+        emit IdentityVerified(msg.sender);
+        logIdentityAction("Identity Verified");
+    }
+```
+
+The `verifyIdentity` function allows a user to verify their identity. It performs the following functions actions :
+
+1. Checks that the user's identity exists.
+2. Sets the `isVerified` field of the user's identity to `true`.
+3. Emits the `IdentityVerified` event.
+4. Logs the action "Identity Verified" using the `logIdentityAction` function.
+
+## Revoke Identity 
+
+```solidity
+  function revokeIdentity() public {
+        require(identities[msg.sender].exists, "Identity does not exist");
+        identities[msg.sender].isVerified = false;
+        emit IdentityRevoked(msg.sender);
+        logIdentityAction("Identity Revoked");
+    }
+```
+
+The `revokeIdentity` function allows a user to revoke their identity verification.
+
+1. **Checks that the user's identity exists**.
+2. **Sets the `isVerified` field of the user's identity to `false`**, marking it as not verified.
+3. **Emits the `IdentityRevoked` event**.
+4. **Logs the action "Identity Revoked"** using the `logIdentityAction` function.
+
+## Retrieve Identity
+
+```solidity
+ function getIdentity(address _user) public view returns (Identity memory) {
+        require(identities[_user].exists, "Identity does not exist");
+        return identities[_user];
+    }
+```
+The `getIdentity` function retrieves the identity details for a specified user address:
+
+1. **Checks that the user's identity exists** in the `identities` mapping.
+2. **Returns the identity details** for the specified address.
+
+## Check Identity Verification 
+
+```solidity
+    function isIdentityVerified(address _user) public view returns (bool) {
+        require(identities[_user].exists, "Identity does not exist");
+        return identities[_user].isVerified;
+    }
+```
+
+The `isIdentityVerified` function checks whether a specified user's identity is verified:
+
+1. **Checks that the user's identity exists** in the `identities` mapping.
+2. **Returns the verification status** (`true` or `false`) of the specified user's identity.
+
 
 
