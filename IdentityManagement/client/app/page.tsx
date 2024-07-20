@@ -1,14 +1,21 @@
-"use client"
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import { storeIdentityOnXRPL, getIdentityFromXRPL, xrplAddress, logIdentityActionOnXRPL } from './xrpl';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast, ToastOptions } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const contractAddress = require('../variables/address.json');
 const abi = require('../variables/abi.json');
+
+interface Identity {
+    name: string;
+    email: string;
+    user: string;
+    isVerified: boolean | null;
+    exists: boolean;
+}
 
 /**
  * The Home component manages user identity interactions, including fetching, submitting,
@@ -17,24 +24,24 @@ const abi = require('../variables/abi.json');
  * @component
  */
 function Home() {
-    const [provider, setProvider] = useState(null);
-    const [signer, setSigner] = useState(null);
-    const [contract, setContract] = useState(null);
-    const [account, setAccount] = useState('');
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [identity, setIdentity] = useState(null);
-    const [isIdentityFetched, setIsIdentityFetched] = useState(false);
+    const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
+    const [signer, setSigner] = useState<ethers.Signer | null>(null);
+    const [contract, setContract] = useState<ethers.Contract | null>(null);
+    const [account, setAccount] = useState<string>('');
+    const [name, setName] = useState<string>('');
+    const [email, setEmail] = useState<string>('');
+    const [identity, setIdentity] = useState<Identity | null>(null);
+    const [isIdentityFetched, setIsIdentityFetched] = useState<boolean>(false);
 
     /**
      * Initializes the Ethereum provider, signer, and contract, then fetches the user's identity.
      */
     useEffect(() => {
         const init = async () => {
-            if (window.ethereum) {
-                const provider = new ethers.BrowserProvider(window.ethereum).provider;
+            if (typeof window !== 'undefined') {
+                const provider = new ethers.BrowserProvider((window as any).ethereum);
                 await provider.send("eth_requestAccounts", []);
-                const signer = provider.getSigner();
+                const signer = await provider.getSigner();
                 const contract = new ethers.Contract(contractAddress, abi, signer);
                 setProvider(provider);
                 setSigner(signer);
@@ -45,36 +52,37 @@ function Home() {
             }
         };
         init();
-    }, [account]);
+    }, [account,isIdentityFetched]
+);
 
     /**
      * Displays a toast notification.
      * @param {string} message - The message to display.
-     * @param {string} [type="info"] - The type of notification ("info", "success", "error", etc.).
+     * @param {ToastOptions} [options] - The type of notification ("info", "success", "error", etc.).
      */
-    const notify = (message, type = "info") => {
-        toast(message, { type });
+    const notify = (message: string, options: ToastOptions = {}) => {
+        toast(message, options);
     };
 
     /**
      * Fetches the user's identity from the smart contract and XRPL.
      * @param {string} account - The user's Ethereum account address.
      */
-    const fetchIdentity = async (account) => {
+    const fetchIdentity = async (account: string) => {
         try {
+            if (!contract) return;
             const identity = await contract.getIdentity(account);
             if (identity.exists) {
                 setName(identity.name);
                 setEmail(identity.email);
                 setIdentity(identity);
                 setIsIdentityFetched(true);
-                notify("Identity fetched successfully", "success");
+                notify("Identity fetched successfully", { type: "success" });
             } else {
-                notify("No identity found on contract", "info");
+                notify("No identity found on contract", { type: "info" });
             }
-
         } catch (error) {
-            notify("Failed to fetch identity", "error");
+            notify("Failed to fetch identity", { type: "error" });
         }
     };
 
@@ -83,12 +91,14 @@ function Home() {
      */
     const submitIdentity = async () => {
         try {
-            await contract.addIdentity(name, email);
-            notify("Identity added successfully", "success");
+            if (!contract) return;
+            const transaction = await contract.addIdentity(name, email);
+            await transaction.wait();
+            notify("Identity added successfully", { type: "success" });
             fetchIdentity(account); // Refresh identity after submission
         } catch (error) {
             console.log(error);
-            notify("Failed to add identity", "error");
+            notify("Failed to add identity", { type: "error" });
         }
     };
 
@@ -97,12 +107,13 @@ function Home() {
      */
     const updateIdentity = async () => {
         try {
-            const update = await contract.updateIdentity(name, email);
-            await update.wait();
-            notify("Identity updated successfully", "success");
+            if (!contract) return;
+            const transaction = await contract.updateIdentity(name, email);
+            await transaction.wait();
+            notify("Identity updated successfully", { type: "success" });
             fetchIdentity(account); // Refresh identity after update
         } catch (error) {
-            notify("Failed to update identity", "error");
+            notify("Failed to update identity", { type: "error" });
         }
     };
 
@@ -111,13 +122,14 @@ function Home() {
      */
     const verifyIdentity = async () => {
         try {
-            const verify = await contract.verifyIdentity();
-            await verify.wait();
-            notify("Identity verified successfully", "success");
+            if (!contract) return;
+            const transaction = await contract.verifyIdentity();
+            await transaction.wait();
+            notify("Identity verified successfully", { type: "success" });
             fetchIdentity(account); // Refresh identity after verification
         } catch (error) {
             console.log(error);
-            notify("Failed to verify identity", "error");
+            notify("Failed to verify identity", { type: "error" });
         }
     };
 
@@ -126,12 +138,13 @@ function Home() {
      */
     const revokeIdentity = async () => {
         try {
-            const revoke = await contract.revokeIdentity();
-            await revoke.wait();
-            notify("Identity revoked successfully", "success");
+            if (!contract) return;
+            const transaction = await contract.revokeIdentity();
+            await transaction.wait();
+            notify("Identity revoked successfully", { type: "success" });
             fetchIdentity(account); // Refresh identity after revoke
         } catch (error) {
-            notify("Failed to revoke identity", "error");
+            notify("Failed to revoke identity", { type: "error" });
         }
     };
 
@@ -145,16 +158,13 @@ function Home() {
                         <button className="btn btn-secondary">
                             Connected: {account.slice(0, 6)}...{account.slice(-4)}
                         </button>
-                        <button className="btn btn-secondary">
-                            XRPL Connected: {xrplAddress?.slice(0, 6)}...{xrplAddress?.slice(-4)}
-                        </button>
                     </>                 
-                ) : (
-                    <button className="btn btn-primary" onClick={() => window.ethereum.request({ method: 'eth_requestAccounts' })}>
+                ) : (                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+                    <button className="btn btn-primary" onClick={() => (window as any).ethereum?.request({ method: 'eth_requestAccounts' })}>
                         Connect Wallet
                     </button>
                 )}
-            </header>
+            </header>   
             <div className="card p-4">
                 <div className="form-group">
                     <label>Name:</label>
@@ -181,8 +191,8 @@ function Home() {
                 <div className="d-flex justify-content-between mt-3">
                     <button className="btn btn-primary" onClick={submitIdentity} disabled={isIdentityFetched}>Submit Identity</button>
                     <button className="btn btn-warning" onClick={updateIdentity} disabled={!isIdentityFetched}>Update Identity</button>
-                    <button className="btn btn-success" onClick={verifyIdentity} disabled={!isIdentityFetched || (identity && identity.isVerified)}>Verify Identity</button>
-                    <button className="btn btn-danger" onClick={revokeIdentity} disabled={!isIdentityFetched || (identity && !identity.exists)}>Revoke Identity</button>
+                    <button className="btn btn-success" onClick={verifyIdentity} disabled={!isIdentityFetched || !!(identity && identity.isVerified)}>Verify Identity</button>
+                    <button className="btn btn-danger" onClick={revokeIdentity} disabled={!isIdentityFetched || !!(identity && !identity.exists)}>Revoke Identity</button>
                 </div>
             </div>
         </div>
