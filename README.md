@@ -571,8 +571,17 @@ To get started, we have to decide which frontend framework we will be using. You
 
 Inside your project root, open your teminal and run these commands to set up your frontend.
 
-`mkdir client`
-`cd client`
-`npx create-next-app@latest`
 
-These above commands create a folder named `client`
+`npx create-next-app@latest client`
+
+This above command create a next js project in `client` folder.
+
+Once you have successfully set up your project, there are few packages that we are going to install in order to interact with our smart contracts in the frontend. 
+
+We will be installing `zksync-ethers` `ethers` and `bootstrap` and `react-toastify`.
+
+Open the client folder and create a `variables` folder inside it. This folder will hold `abi.json` file and `address.json`. These two files are needed to connect to our smart contract.
+
+Now, go ahead and create the two files with empty array `[]`. Next, copy the `abi` from ypur deployed and paste inside the `abi.json`. Repeat the same thing for your contract address.
+
+
