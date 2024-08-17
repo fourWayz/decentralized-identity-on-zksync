@@ -18,6 +18,7 @@ A Dive into Building a Decentralized Identity Management on zkSync
 12. [Log Identity Actions](#log-identity-actions)
 14. [Compiling and Writing Tests](#compiling-and-writing-tests)
 15. [Deployment](#deployment)
+16. [Frontend Integration](#frontend-integration)
 
 ## Introduction
 
@@ -564,8 +565,14 @@ Finally, run `npm run deploy` to deploy your smart contract to zkSync sepolia te
 
 Congratulations!
 
+## Frontend Integration
 
+To get started, we have to decide which frontend framework we will be using. You can decide to use whichever one that works for you best. In this tutorial, we will be using Next js, a React framework.
 
+Inside your project root, open your teminal and run these commands to set up your frontend.
 
+`mkdir client`
+`cd client`
+`npx create-next-app@latest`
 
-
+These above commands create a folder named `client`
