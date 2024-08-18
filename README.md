@@ -563,7 +563,7 @@ export default async function () {
 Finally, run `npm run deploy` to deploy your smart contract to zkSync sepolia testnet which will output a result like the one below:
 <img width="590" alt="4w-identity-deploy" src="https://github.com/user-attachments/assets/4fc28a86-5f9c-49d7-a784-3a6458c0bf0d">
 
-Congratulations!
+Congratulations! You have successfully deployed a contract.
 
 ## Frontend Integration
 
@@ -578,10 +578,17 @@ This above command create a next js project in `client` folder.
 
 Once you have successfully set up your project, there are few packages that we are going to install in order to interact with our smart contracts in the frontend. 
 
-We will be installing `zksync-ethers` `ethers` and `bootstrap` and `react-toastify`.
+We will be installing `zksync-ethers` `ethers` and `bootstrap` and `react-toastify`. `zksync-ethers` and `ethers` will be needed to interact with our smart contract, `bootstrap` will be used to design the frontend interface while `react-toastify` will be used to handle notifications or alerts on the dApp.
 
-Open the client folder and create a `variables` folder inside it. This folder will hold `abi.json` file and `address.json`. These two files are needed to connect to our smart contract.
+Open your terminal and navigate into the `client` directory to insall these dependencies by running the commands below : 
 
-Now, go ahead and create the two files with empty array `[]`. Next, copy the `abi` from ypur deployed and paste inside the `abi.json`. Repeat the same thing for your contract address.
+`npm i zksync-ethers ethers bootstrap react-toastify`
+
+
+After the installations are done, open the client folder and create a `variables` folder inside it. This folder will hold `abi.json` file and `address.json`. These two files are needed to connect to our smart contract.
+
+Now, go ahead and create the two files. Next, copy the `abi` from your deployed contract's deployment and paste it inside the `abi.json`. Repeat the same process for your contract address.
+
+
 
 
