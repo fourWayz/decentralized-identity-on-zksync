@@ -622,6 +622,7 @@ Let's proceed to declare `Home` component where our frontend functionalities wil
 function Home() {
 
 }
+export default Home;
 ```
 
 Inside the `Home` component, let's declare our state variables needed to manage the dApp's states.
@@ -661,7 +662,6 @@ Also, let's create a `useEffect` that initializes the connection to the zkSync n
         const signer = await provider.getSigner()
         const contract = new ethers.Contract(contractAddress, abi, signer);
         setProvider(zkProvider);
-        console.log(await zkProvider.getBalance(gaslessPaymasterAddress))
         setContract(contract);
         setAccount(await signer.getAddress());
         fetchIdentity(account);
@@ -685,7 +685,7 @@ Next, let's proceed to create a `notify` function that handles alerts and notifi
 
 Finally, let's create functions that fetches identities, submit identities, update identities , verify identities and revoke identities.
 
-```
+```javascript
 const fetchIdentity = async (account) => {
     try {
 
@@ -771,4 +771,210 @@ const verifyIdentity = async () => {
 
 ```
 
+By now, your `page.jsx` should look like this.
+
+```javascript
+
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import { ethers } from "ethers";
+import { utils, BrowserProvider } from "zksync-ethers";
+import { ToastContainer, toast, ToastOptions } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Provider, Wallet } from 'zksync-ethers';
+
+const contractAddress = require('../variables/address.json');
+const abi = require('../variables/abi.json');
+
+function Home() {
+
+    const [provider, setProvider] = useState(null);
+    const [signer, setSigner] = useState(null);
+    const [contract, setContract] = useState(null);
+    const [account, setAccount] = useState('');
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [identity, setIdentity] = useState(null);
+    const [isIdentityFetched, setIsIdentityFetched] = useState(false);
+
+    useEffect(() => {
+        const init = async () => {
+          if (typeof window !== 'undefined') {
+            const provider = new BrowserProvider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            const zkProvider = new Provider("https://sepolia.era.zksync.dev")
+            const signer = await provider.getSigner()
+            const contract = new ethers.Contract(contractAddress, abi, signer);
+            setProvider(zkProvider);
+            console.log(await zkProvider.getBalance(gaslessPaymasterAddress))
+            setContract(contract);
+            setAccount(await signer.getAddress());
+            fetchIdentity(account);
+          }
+        };
+        init();
+      },[account]);
+
+
+    const notify = (message, options = {}) => {
+
+        toast(message, options);
+    
+    };
+
+    const fetchIdentity = async (account) => {
+        try {
+    
+          if (!contract) return;
+          const identity = await contract.getIdentity(account.toString());
+          if (identity.exists) {
+            setName(identity.name);
+            setEmail(identity.email);
+            setIdentity(identity);
+            setIsIdentityFetched(true);
+            notify("Identity fetched successfully", { type: "success" });
+          } else {
+            notify("No identity found on contract", { type: "info" });
+          }
+        } catch (error) {
+          notify("Failed to fetch identity", { type: "error" });
+        }
+      };
+    
+    
+      const submitIdentity = async () => {
+        try {
+          if (!contract) return;
+    
+          const transaction = await contract.addIdentity(name,email);
+          await transaction.wait();
+    
+          notify("Identity added successfully", { type: "success" });
+          fetchIdentity(account); // Refresh identity after submission
+        } catch (error) {
+          console.log(error);
+          notify("Failed to add identity")
+        }
+    }
+    
+      const updateIdentity = async () => {
+        try {
+          if (!contract) return;
+    
+          const transaction = await contract.updateIdentity(name,email);
+    
+          await transaction.wait();
+    
+          notify("Identity updated successfully", { type: "success" });
+          fetchIdentity(account); // Refresh identity after submission
+        } catch (error) {
+          console.log(error);
+          notify("Failed to update identity")
+        }
+      };
+    
+    const verifyIdentity = async () => {
+        try {
+          if (!contract) return;
+    
+          const transaction = await contract.verifyIdentity();
+    
+          await transaction.wait();
+    
+          notify("Identity verified successfully", { type: "success" });
+          fetchIdentity(account); // Refresh identity after verification
+        } catch (error) {
+          console.log(error);
+          notify("Failed to verify identity")
+        }
+      };
+    
+     const revokeIdentity = async () => {
+        try {
+          if (!contract) return;
+    
+          const transaction = await contract.revokeIdentity();
+    
+          await transaction.wait();
+    
+          notify("Identity revoked successfully", { type: "success" });
+          fetchIdentity(account); // Refresh identity after revoke
+        } catch (error) {
+          console.log(error);
+          notify("Failed to revoked identity")
+        }
+      };
+      
+}
+
+export default Home;
+```
+
+Lastly, let's render our component.
+
+```javascript
+
+    return (
+        <div className="container mt-5">
+            <ToastContainer />
+            <header className="d-flex justify-content-between align-items-center mb-4">
+                <h1>Identity Verification</h1>
+                {account ? (
+                    <>
+                        <button className="btn btn-secondary">
+                            Connected: {account.slice(0, 6)}...{account.slice(-4)}
+                        </button>
+                    </>
+                  ) : (  
+                    <button className="btn btn-primary" onClick={() => window.ethereum?.request({ method: 'eth_requestAccounts' })}>
+                        Connect Wallet
+                    </button>
+                )}
+            </header>   
+            <div className="card p-4">
+                <div className="form-group">
+                    <label>Name:</label>
+                    <input type="text" className="form-control" value={name} onChange={(e) => setName(e.target.value)} />
+                </div>
+                <div className="form-group">
+                    <label>Email:</label>
+                    <input type="email" className="form-control" value={email} onChange={(e) => setEmail(e.target.value)} />
+                </div>
+                {identity && (
+                    <div className="mt-3">
+                        <div className="card">
+                            <div className="card-header">
+                                Identity Information
+                            </div>
+                            <ul className="list-group list-group-flush">
+                                <li className="list-group-item"><strong>User Address:</strong> {identity.user}</li>
+                                <li className="list-group-item"><strong>Verified:</strong> {identity.isVerified ? "Yes" : "No"}</li>
+                                <li className="list-group-item"><strong>Exists:</strong> {identity.exists ? "Yes" : "No"}</li>
+                            </ul>
+                        </div>
+                    </div>
+                )}
+                <div className="d-flex justify-content-between mt-3">
+                    <button className="btn btn-primary" onClick={submitIdentity} disabled={isIdentityFetched}>Submit Identity</button>
+                    <button className="btn btn-warning" onClick={updateIdentity} disabled={!isIdentityFetched}>Update Identity</button>
+                    <button className="btn btn-success" onClick={verifyIdentity} disabled={!isIdentityFetched || !!(identity && identity.isVerified)}>Verify Identity</button>
+                    <button className="btn btn-danger" onClick={revokeIdentity} disabled={!isIdentityFetched || !!(identity && !identity.exists)}>Revoke Identity</button>
+                </div>
+            </div>
+        </div>
+    );
+```
+
+Now, we are set to go. Our dApp is now fully functional. Proceed to terminal, navigate to `client` directory and run the below command.
+
+`npm run dev`
+
+Your browser should display like this image below :
+![fetch-page](https://github.com/user-attachments/assets/b616a8fb-40ac-4c0d-b5cf-bed1c228f0b1)
+
+Note: Our notification's library `react-toasify` notifies us `failed to fetch identity` because we have not submitted and identity.
+
+Congratulations 🎊 ! Explore your dApp.
 
