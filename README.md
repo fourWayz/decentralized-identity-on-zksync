@@ -648,5 +648,127 @@ Inside the `Home` component, let's declare our state variables needed to manage 
 
 These states that we declared collectively manage the connection to the blockchain, user information, and interaction with the smart contract.
 
-Also,
+Also, let's create a `useEffect` that initializes the connection to the zkSync network and fetches current user's identity.
+
+```typescript
+
+  useEffect(() => {
+    const init = async () => {
+      if (typeof window !== 'undefined') {
+        const provider = new BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const zkProvider = new Provider("https://sepolia.era.zksync.dev")
+        const signer = await provider.getSigner()
+        const contract = new ethers.Contract(contractAddress, abi, signer);
+        setProvider(zkProvider);
+        console.log(await zkProvider.getBalance(gaslessPaymasterAddress))
+        setContract(contract);
+        setAccount(await signer.getAddress());
+        fetchIdentity(account);
+      }
+    };
+    init();
+  },[account]);
+```
+
+This `useEffect` hook initializes the connection to zkSync by setting up the Ethereum provider, retrieving the user's account, creating a contract instance, and fetching the user's identity. The necessary states for the provider, contract, and account are updated. The effect runs whenever the account state changes.
+
+Next, let's proceed to create a `notify` function that handles alerts and notifications using `react-toastify`.
+
+```javascript
+  const notify = (message, options = {}) => {
+
+    toast(message, options);
+
+};
+```
+
+Finally, let's create functions that fetches identities, submit identities, update identities , verify identities and revoke identities.
+
+```
+const fetchIdentity = async (account) => {
+    try {
+
+      if (!contract) return;
+      const identity = await contract.getIdentity(account.toString());
+      if (identity.exists) {
+        setName(identity.name);
+        setEmail(identity.email);
+        setIdentity(identity);
+        setIsIdentityFetched(true);
+        notify("Identity fetched successfully", { type: "success" });
+      } else {
+        notify("No identity found on contract", { type: "info" });
+      }
+    } catch (error) {
+      notify("Failed to fetch identity", { type: "error" });
+    }
+  };
+
+
+  const submitIdentity = async () => {
+    try {
+      if (!contract) return;
+
+      const transaction = await contract.addIdentity(name,email);
+      await transaction.wait();
+
+      notify("Identity added successfully", { type: "success" });
+      fetchIdentity(account); // Refresh identity after submission
+    } catch (error) {
+      console.log(error);
+      notify("Failed to add identity")
+    }
+}
+
+  const updateIdentity = async () => {
+    try {
+      if (!contract) return;
+
+      const transaction = await contract.updateIdentity(name,email);
+
+      await transaction.wait();
+
+      notify("Identity updated successfully", { type: "success" });
+      fetchIdentity(account); // Refresh identity after submission
+    } catch (error) {
+      console.log(error);
+      notify("Failed to update identity")
+    }
+  };
+
+const verifyIdentity = async () => {
+    try {
+      if (!contract) return;
+
+      const transaction = await contract.verifyIdentity();
+
+      await transaction.wait();
+
+      notify("Identity verified successfully", { type: "success" });
+      fetchIdentity(account); // Refresh identity after verification
+    } catch (error) {
+      console.log(error);
+      notify("Failed to verify identity")
+    }
+  };
+
+ const revokeIdentity = async () => {
+    try {
+      if (!contract) return;
+
+      const transaction = await contract.revokeIdentity();
+
+      await transaction.wait();
+
+      notify("Identity revoked successfully", { type: "success" });
+      fetchIdentity(account); // Refresh identity after revoke
+    } catch (error) {
+      console.log(error);
+      notify("Failed to revoked identity")
+    }
+  };
+
+```
+
 
