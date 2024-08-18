@@ -589,6 +589,64 @@ After the installations are done, open the client folder and create a `variables
 
 Now, go ahead and create the two files. Next, copy the `abi` from your deployed contract's deployment and paste it inside the `abi.json`. Repeat the same process for your contract address.
 
+Let's begin writing frontend code. Open your `page.jsx` inside the `app` directory and clear all the contents of the file.
 
+To start with, add `use client` at the top level of the file. This directive helps to distinguish between server and client component in Next js. It ensures that the component is rendered on the client-side, allowing you to use client-side functionalities like React hooks (useState, useEffect, etc.), browser APIs, and event listeners.
 
+Next, import the below dependencies. 
+
+```typescript
+import React, { useState, useEffect } from 'react';
+import { ethers } from "ethers";
+import { utils, BrowserProvider } from "zksync-ethers";
+import { ToastContainer, toast, ToastOptions } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Provider, Wallet } from 'zksync-ethers';
+```
+
+The next thing is to import `contract address` and `abi` from the `variables` folder we created earlier.
+
+```javascript
+const contractAddress = require('../variables/address.json');
+const abi = require('../variables/abi.json');
+
+```
+
+Currently, your `page.jsx` should like the image below.
+![page-head](https://github.com/user-attachments/assets/d7f92ae5-ad83-41a3-aac9-53ab71f53ca4)
+
+Let's proceed to declare `Home` component where our frontend functionalities will reside.
+
+```javascript
+function Home() {
+
+}
+```
+
+Inside the `Home` component, let's declare our state variables needed to manage the dApp's states.
+
+```javascript
+  const [provider, setProvider] = useState(null);
+  const [signer, setSigner] = useState(null);
+  const [contract, setContract] = useState(null);
+  const [account, setAccount] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [identity, setIdentity] = useState(null);
+  const [isIdentityFetched, setIsIdentityFetched] = useState(false);
+````
+
+- **`provider`**: Stores the blockchain provider, used to interact with the zkSync network.
+- **`signer`**: Holds the signer object, representing an account that can sign transactions.
+- **`contract`**: Stores the smart contract instance that will be interacted with.
+- **`account`**: Contains the address of the connected user's account.
+- **`name`**: Manages the name of the current user.
+- **`email`**: Manages the user's email address for identification .
+- **`identity`**: Stores the user's identity information.
+- **`isIdentityFetched`**: A boolean flag indicating whether the user's identity has been successfully fetched or not.
+
+These states that we declared collectively manage the connection to the blockchain, user information, and interaction with the smart contract.
+
+Also,
 
